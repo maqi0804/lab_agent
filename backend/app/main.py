@@ -5,8 +5,8 @@ from fastapi.exceptions import RequestValidationError
 from app.api import api
 from starlette.middleware.cors import CORSMiddleware
 from app.common.exceptions import (
-    BusinessExcepition,
-    bussiness_exception_handler,
+    BusinessException,
+    business_exception_handler,
     http_exception_handler,
     validation_exception_handler,
     global_exception_handler,
@@ -33,7 +33,7 @@ app.add_middleware(
 app.include_router(api)
 
 # 注册自定义异常
-app.add_exception_handler(BusinessExcepition, bussiness_exception_handler)
+app.add_exception_handler(BusinessException, business_exception_handler)
 # 注册HTTP异常处理器
 app.add_exception_handler(HTTPException, http_exception_handler)
 # 注册参数异常处理器

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.common.exceptions import BusinessExcepition
+from app.common.exceptions import BusinessException
 from app.common.response import Response
 from app.schemas.auth import LoginRequest, LoginResponse
 from sqlalchemy.orm import Session
@@ -19,10 +19,10 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 
     # 判断账号和密码是否正确
     if not user or not verify_password(data.password, user.password):
-        raise BusinessExcepition(message="账号或密码错误")
+        raise BusinessException(message="账号或密码错误")
     # 判断账号状态
     if user.status != 1:
-        raise BusinessExcepition(message="账号已被禁用")
+        raise BusinessException(message="账号已被禁用")
     # 生成token
     token = create_access_token(user_id=user.id)
     # 返回信息

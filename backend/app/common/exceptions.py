@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from app.common.response import Response
 
 
-class BusinessExcepition(Exception):
+class BusinessException(Exception):
     """自定义业务异常"""
 
     def __init__(self, message: str, code: int = 500):
@@ -14,7 +14,7 @@ class BusinessExcepition(Exception):
         super().__init__(message)
 
 
-async def bussiness_exception_handler(request: Request, exc: BusinessExcepition):
+async def business_exception_handler(request: Request, exc: BusinessException):
     """自定义业务异常处理器"""
     return JSONResponse(
         status_code=200,
