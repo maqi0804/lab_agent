@@ -3,7 +3,7 @@
     <div class="login-box">
       <h1 style="font-size: 28px">实验室预约系统</h1>
       <div style="margin-top: 5px; margin-bottom: 30px">基于agent智能预约系统</div>
-      <el-form :model="form" label-width="auto" style="max-width: 600px">
+      <el-form :model="form" label-width="0px" style="width: 100%">
         <el-form-item>
           <el-input
             size="large"
@@ -32,10 +32,10 @@
             >登录</el-button
           >
           <div style="text-align: right; margin-top: 20px">
-            还没有账号？请<a
+            还没有账号？请<router-link
               style="color: var(--el-color-primary); margin-left: 3px"
-              href="/register"
-              >注册</a
+              to="/register"
+              >注册</router-link
             >
           </div>
         </div>
@@ -49,6 +49,9 @@ import { reactive, ref } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
+import { loginApi } from '@/api/auth'
+import { useUser } from '@/utils/user'
+const { saveLoginData } = useUser()
 
 const form = reactive({
   username: '',
@@ -59,11 +62,17 @@ const loadingValue = ref(false)
 
 const login = async () => {
   loadingValue.value = true
-  setTimeout(() => {
+  try {
+    const res = await loginApi(form)
+
+    if (res.code == 200) {
+      saveLoginData(res.data)
+      ElMessage.success('登录成功')
+      await router.push('/manager/home')
+    }
+  } finally {
     loadingValue.value = false
-    ElMessage.success('登录成功')
-    router.push('/manager/home')
-  }, 2000)
+  }
 }
 </script>
 

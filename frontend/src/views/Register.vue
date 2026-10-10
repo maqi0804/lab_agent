@@ -42,8 +42,10 @@
             注册
           </el-button>
           <div style="text-align: right; margin-top: 20px">
-            已有账号？请<a style="color: var(--el-color-primary); margin-left: 3px" href="/login"
-              >登录</a
+            已有账号？请<router-link
+              style="color: var(--el-color-primary); margin-left: 3px"
+              to="/login"
+              >登录</router-link
             >
           </div>
         </div>

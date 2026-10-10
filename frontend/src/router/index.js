@@ -1,3 +1,4 @@
+import { getToken } from '@/utils/auth'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -18,6 +19,16 @@ const router = createRouter({
     { path: '/login', name: 'Login', component: () => import('@/views/Login.vue') },
     { path: '/register', name: 'Register', component: () => import('@/views/Register.vue') }
   ]
+})
+
+//路由守卫，验证token是否存在，若不存在则跳转到登录页面
+router.beforeEach((to, from) => {
+  const token = getToken()
+  if (to.path === '/login' || to.path === '/register') {
+    return true
+  } else {
+    return token ? true : '/login'
+  }
 })
 
 export default router
