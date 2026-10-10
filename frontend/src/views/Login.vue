@@ -3,8 +3,8 @@
     <div class="login-box">
       <h1 style="font-size: 28px">实验室预约系统</h1>
       <div style="margin-top: 5px; margin-bottom: 30px">基于agent智能预约系统</div>
-      <el-form :model="form" label-width="0px" style="width: 100%">
-        <el-form-item>
+      <el-form ref="formRef" :rules="rules" :model="form" label-width="0px" style="width: 100%">
+        <el-form-item prop="username">
           <el-input
             size="large"
             v-model="form.username"
@@ -12,7 +12,7 @@
             :prefix-icon="User"
           />
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="password">
           <el-input
             size="large"
             v-model="form.password"
@@ -53,6 +53,8 @@ import { loginApi } from '@/api/auth'
 import { useUser } from '@/utils/user'
 const { saveLoginData } = useUser()
 
+const formRef = ref()
+
 const form = reactive({
   username: '',
   password: ''
@@ -60,7 +62,14 @@ const form = reactive({
 
 const loadingValue = ref(false)
 
+const rules = {
+  username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+}
+
 const login = async () => {
+  const valid = await formRef.value.validate().catch(() => false) //表单验证
+  if (!valid) return // 校验失败，直接退出函数，不提交
   loadingValue.value = true
   try {
     const res = await loginApi(form)
