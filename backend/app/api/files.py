@@ -18,9 +18,9 @@ def upload(file: UploadFile = File(...)):
         raise BusinessException(message="文件名不能为空")
 
     # 原始文件名 ，用户头像.jpg
-    orignal_name = os.path.basename(file.filename)
+    original_name = os.path.basename(file.filename)
     # 文件后缀 .jpg
-    ext = Path(orignal_name).suffix.lower()
+    ext = Path(original_name).suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise BusinessException(message=f"不支持的文件后缀：{ext}")
     # 文件大小校验
@@ -36,7 +36,7 @@ def upload(file: UploadFile = File(...)):
 
     return Response.success(
         data={
-            "original_name": orignal_name,
+            "original_name": original_name,
             "disk_name": disk_name,
             "size": file.size,
             "url": f"/uploads/{disk_name}",
