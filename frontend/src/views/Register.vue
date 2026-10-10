@@ -2,8 +2,8 @@
   <div class="register-container">
     <div class="register-box">
       <h1 style="font-size: 24px; margin-bottom: 30px">欢迎注册实验室预约系统</h1>
-      <el-form :model="form" label-width="auto" style="max-width: 600px">
-        <el-form-item>
+      <el-form ref="formRef" :rules="rules" :model="form" label-width="0px" style="width: 100%">
+        <el-form-item prop="username">
           <el-input
             size="large"
             v-model="form.username"
@@ -11,7 +11,7 @@
             :prefix-icon="User"
           />
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="password">
           <el-input
             size="large"
             v-model="form.password"
@@ -21,7 +21,7 @@
             show-password
           />
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="confirmPassword">
           <el-input
             size="large"
             v-model="form.confirmPassword"
@@ -59,6 +59,7 @@ import { reactive, ref } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
+import { registerApi } from '@/api/auth'
 
 const form = reactive({
   username: '',
@@ -66,23 +67,42 @@ const form = reactive({
   confirmPassword: ''
 })
 
+const formRef = ref()
+
+const validatePass = (rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('请确认密码'))
+  } else {
+    if (value !== form.password) {
+      callback(new Error('两次密码输入不一致'))
+    } else {
+      callback()
+    }
+  }
+}
+
 const loadingValue = ref(false)
 
-const register = () => {
-  loadingValue.value = true
-  if (form.password !== form.confirmPassword) {
-    setTimeout(() => {
-      loadingValue.value = false
-      ElMessage.error('密码不一致')
-    }, 500)
-    return
-  }
+const rules = {
+  username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  confirmPassword: [{ validator: validatePass, trigger: 'blur' }]
+}
 
-  setTimeout(() => {
+const register = async () => {
+  const valid = await formRef.value.validate().catch(() => false) //表单验证
+  if (!valid) return // 校验失败，直接退出函数，不提交
+  loadingValue.value = true
+  try {
+    const res = await registerApi(form)
+
+    if (res.code == 200) {
+      ElMessage.success('注册成功')
+      await router.push('/login')
+    }
+  } finally {
     loadingValue.value = false
-    ElMessage.success('注册成功')
-    window.location.href = '/login'
-  }, 2000)
+  }
 }
 </script>
 

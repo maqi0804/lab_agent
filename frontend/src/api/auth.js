@@ -10,3 +10,10 @@ export function loginApi(data) {
     data
   })
 }
+export function registerApi(data) {
+  return request({
+    url: '/api/auth/register',
+    method: 'post',
+    data
+  })
+}

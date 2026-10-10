@@ -27,6 +27,9 @@ coverage.xml
 htmlcov/
 .tox/
 
+# Runtime uploads (user data, never commit)
+uploads/
+
 # Editor / OS
 .vscode/
 .idea/
