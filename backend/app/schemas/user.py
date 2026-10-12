@@ -9,5 +9,13 @@ class UserResponse(BaseModel):
     status: int
     email: str | None = None
     phone: str | None = None
+    avatar: str | None = None
 
     model_config = ConfigDict(from_attributes=True)  # 将对象JSON序列化
+
+
+class UserUpdateRequest(BaseModel):
+    name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    avatar: str | None = None
