@@ -5,7 +5,7 @@ import request from '@/utils/request'
  */
 export function getUserInfo(data) {
   return request({
-    url: '/api/user/info',
+    url: '/api/user/me',
     method: 'get',
     data
   })
@@ -16,7 +16,7 @@ export function getUserInfo(data) {
  */
 export function updateUserInfo(data) {
   return request({
-    url: '/api/user/update',
+    url: '/api/user/me',
     method: 'put',
     data
   })

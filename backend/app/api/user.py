@@ -11,13 +11,13 @@ from app.services.user_service import get_user_info
 router = APIRouter(prefix="/user", tags=["用户信息"])
 
 
-@router.get("/info")
+@router.get("/me")
 def get_user_info(current_user: User = Depends(get_current_user)):
     """获取当前登录用户信息"""
     return Response.success(data=user_service.get_user_info(current_user))
 
 
-@router.put("/update")
+@router.put("/me")
 def update_user_info(
     data: UserUpdateRequest,
     current_user: User = Depends(get_current_user),
