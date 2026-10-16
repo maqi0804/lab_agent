@@ -16,6 +16,19 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)  # 将对象JSON序列化
 
 
+class UserCreateRequest(BaseModel):
+    """创建用户信息的请求参数"""
+
+    username: str
+    password: str = "123456"
+    name: str | None = None
+    role: str = "student"
+    status: int = 1
+    email: str | None = None
+    phone: str | None = None
+    avatar: str | None = None
+
+
 class UserUpdateRequest(BaseModel):
     """修改用户信息的请求参数"""
 
@@ -23,6 +36,8 @@ class UserUpdateRequest(BaseModel):
     email: str | None = None
     phone: str | None = None
     avatar: str | None = None
+    role: str | None = None
+    status: int | None = None
 
 
 class PasswordUpdateRequest(BaseModel):

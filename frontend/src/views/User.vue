@@ -15,7 +15,8 @@
           @keyup.enter="handleSearch"
           @clear="handleSearch"
         ></el-input>
-        <el-button type="primary" @click="handleSearch">查询</el-button>
+        <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+        <el-button type="success" :icon="Plus" @click="handleCreate">新增</el-button>
       </div>
       <el-table
         :header-cell-style="{ backgroundColor: '#f5f7fa', color: '#333' }"
@@ -46,9 +47,15 @@
         </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'error'">
+            <el-tag :type="row.status === 1 ? 'success' : 'danger'">
               {{ row.status === 1 ? '正常' : '禁用' }}
             </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="160">
+          <template #default="{ row }">
+            <el-button type="primary" text bg @click="handleEdit(row)">编辑</el-button>
+            <el-button type="danger" text bg @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -57,7 +64,6 @@
           v-model:current-page="params.page"
           :page-size="params.pageSize"
           :page-sizes="[5, 10, 50, 100]"
-          :size="size"
           :total="total"
           background
           layout="total, sizes, prev, pager, next, jumper"
@@ -66,13 +72,63 @@
         />
       </div>
     </el-card>
+    <el-dialog v-model="dialogTableVisible" :title="form.id ? '编辑' : '新增'" width="450">
+      <el-form
+        ref="formRef"
+        :rules="rules"
+        :model="form"
+        style="width: 100%; padding-right: 30px; padding-top: 16px"
+        label-width="80px"
+        v-loading="loading"
+      >
+        <el-form-item label="账号" prop="username">
+          <!-- form.id有值时 那就disabled 也就是编辑的情形-->
+          <el-input :disabled="!!form.id" v-model="form.username" placeholder="请输入账号" />
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input
+            type="password"
+            show-password
+            v-model="form.password"
+            placeholder="请输入密码"
+          />
+        </el-form-item>
+        <el-form-item label="名称" prop="name">
+          <el-input v-model="form.name" placeholder="请输入名称" />
+        </el-form-item>
+        <el-form-item label="角色" prop="role">
+          <el-select v-model="form.role">
+            <el-option label="学生" value="student"></el-option>
+            <el-option label="管理员" value="admin"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="form.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="手机号" prop="phone">
+          <el-input v-model="form.phone" placeholder="请输入手机号" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="form.status">
+            <el-radio :value="1">正常</el-radio>
+            <el-radio :value="0">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button>取消</el-button>
+        <el-button type="primary" :loading="formLoading" @click="handleSave">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
+import { Search, Plus } from '@element-plus/icons-vue'
 import { ref, reactive } from 'vue'
 import { onMounted } from 'vue'
-import { getUserPageList } from '@/api/user'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { createUserApi, getUserPageList, updateUserApi, deleteUserApi } from '@/api/user'
 
 const params = reactive({
   page: 1,
@@ -81,8 +137,94 @@ const params = reactive({
 })
 const tableData = ref([])
 const loading = ref(false)
+const formLoading = ref(false)
 const total = ref(0)
+const dialogTableVisible = ref(false)
+const formRef = ref()
+const form = reactive({
+  username: '',
+  name: '',
+  role: '',
+  email: '',
+  phone: '',
+  avatar: '',
+  status: 1
+})
 
+const rules = {
+  username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 3, max: 10, message: '密码长度在3-10之间', trigger: 'blur' }
+  ],
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  email: [{ type: 'email', message: '邮箱格式错误', trigger: 'blur' }],
+  phone: [{ pattern: /^1[3-9]\d{9}$/, message: '手机号格式错误', trigger: 'blur' }]
+}
+const resetForm = () => {
+  Object.assign(form, {
+    id: null,
+    username: '',
+    name: '',
+    role: '',
+    email: '',
+    phone: '',
+    avatar: '',
+    status: 1
+  })
+}
+const handleCreate = () => {
+  resetForm()
+  formRef.value?.clearValidate()
+  dialogTableVisible.value = true
+}
+
+// 编辑用户信息
+const handleEdit = (row) => {
+  resetForm()
+  formRef.value?.clearValidate()
+  Object.assign(form, {
+    id: row.id,
+    username: row.username,
+    name: row.name,
+    role: row.role,
+    email: row.email,
+    phone: row.phone,
+    avatar: row.avatar,
+    status: row.status
+  })
+  dialogTableVisible.value = true
+}
+
+// 删除用户信息
+const handleDelete = async (row) => {
+  ElMessageBox.confirm(`确认删除用户[${row.username}]?`, '确认删除', { type: 'warning' }).then(
+    async () => {
+      const res = await deleteUserApi(row.id)
+      if (res.code === 200) {
+        ElMessage.success('删除用户成功')
+        load()
+      }
+    }
+  )
+}
+
+// 保存用户信息
+const handleSave = async () => {
+  const valid = await formRef.value.validate().catch(() => false) //表单验证
+  if (!valid) return
+  formLoading.value = true
+  try {
+    const res = form.id ? await updateUserApi(form.id, form) : await createUserApi(form)
+    if (res.code === 200) {
+      dialogTableVisible.value = false
+      ElMessage.success('操作成功')
+      load()
+    }
+  } finally {
+    formLoading.value = false
+  }
+}
 // 加载分页数据
 const load = async () => {
   loading.value = true
@@ -106,7 +248,7 @@ const handleSearch = async () => {
   load()
 }
 
-const handleSizeChange = (newSize) => {
+const handleSizeChange = async (newSize) => {
   params.pageSize = newSize
   params.page = 1 // 切换条数，重置回第1页！
   load()
