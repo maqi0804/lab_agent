@@ -38,6 +38,7 @@ class UserUpdateRequest(BaseModel):
     avatar: str | None = None
     role: str | None = None
     status: int | None = None
+    password: str | None = None
 
 
 class PasswordUpdateRequest(BaseModel):

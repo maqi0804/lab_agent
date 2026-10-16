@@ -125,7 +125,7 @@
 
 <script setup>
 import { Search, Plus } from '@element-plus/icons-vue'
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createUserApi, getUserPageList, updateUserApi, deleteUserApi } from '@/api/user'
@@ -148,19 +148,23 @@ const form = reactive({
   email: '',
   phone: '',
   avatar: '',
-  status: 1
+  status: 1,
+  password: ''
 })
 
-const rules = {
-  username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 3, max: 10, message: '密码长度在3-10之间', trigger: 'blur' }
-  ],
-  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
-  email: [{ type: 'email', message: '邮箱格式错误', trigger: 'blur' }],
-  phone: [{ pattern: /^1[3-9]\d{9}$/, message: '手机号格式错误', trigger: 'blur' }]
-}
+// 动态校验规则
+const rules = computed(() => {
+  return {
+    username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+    password: [
+      ...(!form.id ? [{ required: true, message: '请输入密码', trigger: 'blur' }] : []),
+      { min: 3, max: 10, message: '密码长度在3-10之间', trigger: 'blur' }
+    ],
+    name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+    email: [{ type: 'email', message: '邮箱格式错误', trigger: 'blur' }],
+    phone: [{ pattern: /^1[3-9]\d{9}$/, message: '手机号格式错误', trigger: 'blur' }]
+  }
+})
 const resetForm = () => {
   Object.assign(form, {
     id: null,
@@ -170,7 +174,8 @@ const resetForm = () => {
     email: '',
     phone: '',
     avatar: '',
-    status: 1
+    status: 1,
+    password: ''
   })
 }
 const handleCreate = () => {
@@ -191,7 +196,8 @@ const handleEdit = (row) => {
     email: row.email,
     phone: row.phone,
     avatar: row.avatar,
-    status: row.status
+    status: row.status,
+    password: '' //编辑时密码框清空
   })
   dialogTableVisible.value = true
 }
@@ -215,6 +221,11 @@ const handleSave = async () => {
   if (!valid) return
   formLoading.value = true
   try {
+    let submitData = { ...form }
+    //编辑模式，密码为空则删除password字段不传给后端
+    if (form.id && !submitData.password) {
+      delete submitData.password
+    }
     const res = form.id ? await updateUserApi(form.id, form) : await createUserApi(form)
     if (res.code === 200) {
       dialogTableVisible.value = false

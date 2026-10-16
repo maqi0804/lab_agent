@@ -90,6 +90,10 @@ def update_user(db: Session, user_id: int, data: UserUpdateRequest):
         raise BusinessException(message="用户不存在!")
     payload = data.model_dump(exclude_none=True)
 
+    # 如果传了密码，单独加密处理
+    if "password" in payload:
+        payload["password"] = hash_password(payload["password"])
+
     for filed, value in payload.items():
         setattr(user, filed, value)
 
