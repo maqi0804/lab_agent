@@ -22,8 +22,8 @@ class Base(DeclarativeBase):
         primary_key=True, autoincrement=True, comment="主键ID"
     )
     create_time: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.now(), comment="创建时间"
+        DateTime, default=datetime.now, comment="创建时间"
     )
     update_time: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.now(), onupdate=datetime.now(), comment="更新时间"
+        DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间"
     )

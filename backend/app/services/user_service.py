@@ -2,7 +2,7 @@ from math import e
 from operator import or_
 from os import execl
 from app.common.exceptions import BusinessException
-from app.common.response import PageResponse, Response
+from app.common.response import PageResponse
 from app.models.user import User
 from sqlalchemy.orm import Session
 from app.schemas.user import (
@@ -19,9 +19,9 @@ def get_user_info(user: User) -> UserResponse:
 
 
 def update_user_info(db: Session, user: User, data: UserUpdateRequest):
-    user_dict = data.model_dump(
-        exclude_none=True
-    )  # pydantic对象转为字典，忽略所有为None的字段
+    user_dict = data.model_dump(exclude_none=True, exclude={"role", "status"})
+    # print(user_dict)
+    # pydantic对象转为字典，忽略所有为None的字段
     for field, value in user_dict.items():
         setattr(user, field, value)
     db.commit()

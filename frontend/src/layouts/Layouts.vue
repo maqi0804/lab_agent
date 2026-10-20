@@ -39,11 +39,11 @@
               <el-icon><icon-menu /></el-icon>
               <span>系统首页</span>
             </el-menu-item>
-            <el-menu-item index="/manager/labs">
+            <el-menu-item index="/manager/lab">
               <el-icon><House /></el-icon>
               <span>实验室管理</span>
             </el-menu-item>
-            <el-menu-item index="/manager/devices">
+            <el-menu-item index="/manager/device">
               <el-icon><Setting /></el-icon>
               <span>设备列表管理</span>
             </el-menu-item>
