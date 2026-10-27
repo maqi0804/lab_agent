@@ -136,7 +136,7 @@
 
 <script setup>
 import { Search, Plus } from '@element-plus/icons-vue'
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive } from 'vue'
 import { onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getLabPageList, createLabApi, deleteLabApi, updateLabApi } from '@/api/lab'
@@ -188,7 +188,7 @@ const handleCreate = () => {
   dialogTableVisible.value = true
 }
 
-// 编辑用户信息
+// 编辑实验室信息
 const handleEdit = (row) => {
   resetForm()
   formRef.value?.clearValidate()
