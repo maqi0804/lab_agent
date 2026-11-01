@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.common.response import Response
 from app.models.equipment import Equipment
-from app.dependencies.auth import get_current_admin
+from app.dependencies.auth import get_current_admin, get_current_user
 from app.schemas.equipment import EquipmentCreateRequest, EquipmentUpdateRequest
 from app.services import equipment_service
 
@@ -16,7 +16,7 @@ def get_equipment_page(
     page_size: int = 10,
     keywords: str | None = None,
     lab_id: int | None = None,
-    current_user: Equipment = Depends(get_current_admin),
+    current_user: Equipment = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """获取实验室设备列表"""

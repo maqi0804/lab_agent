@@ -157,10 +157,10 @@ const params = reactive({
   lab_id: null
 })
 const tableData = ref([])
-const labOptions = ref([])
-const loading = ref(false)
-const formLoading = ref(false)
 const total = ref(0)
+const loading = ref(false)
+const labOptions = ref([])
+const formLoading = ref(false)
 const dialogTableVisible = ref(false)
 const formRef = ref()
 const form = reactive({
@@ -263,12 +263,12 @@ const load = async () => {
   }
 }
 
-const handleSearch = async () => {
+const handleSearch = () => {
   params.page = 1
   load()
 }
 
-const handleSizeChange = async (newSize) => {
+const handleSizeChange = (newSize) => {
   params.pageSize = newSize
   params.page = 1 // 切换条数，重置回第1页！
   load()

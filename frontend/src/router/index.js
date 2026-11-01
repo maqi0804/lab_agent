@@ -16,7 +16,13 @@ const router = createRouter({
         { path: 'password', name: 'Password', component: () => import('@/views/Password.vue') },
         { path: 'user', name: 'User', component: () => import('@/views/User.vue') },
         { path: 'lab', name: 'Lab', component: () => import('@/views/Lab.vue') },
-        { path: 'equipment', name: 'Equipment', component: () => import('@/views/Equipment.vue') }
+        { path: 'equipment', name: 'Equipment', component: () => import('@/views/Equipment.vue') },
+        { path: 'lablist', name: 'LabList', component: () => import('@/views/LabList.vue') },
+        {
+          path: 'lab-equipment',
+          name: 'LabEquipment',
+          component: () => import('@/views/LabEquipment.vue')
+        }
         // { path: 'devices', name: 'Device', component: () => import('@/views/Device.vue') },
         // { path: 'users', name: 'User', component: () => import('@/views/User.vue') }
       ]

@@ -253,12 +253,12 @@ const load = async () => {
   }
 }
 
-const handleSearch = async () => {
+const handleSearch = () => {
   params.page = 1
   load()
 }
 
-const handleSizeChange = async (newSize) => {
+const handleSizeChange = (newSize) => {
   params.pageSize = newSize
   params.page = 1 // 切换条数，重置回第1页！
   load()
