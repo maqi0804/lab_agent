@@ -13,7 +13,7 @@ class UserResponse(BaseModel):
     phone: str | None = None
     avatar: str | None = None
 
-    model_config = ConfigDict(from_attributes=True)  # 将对象JSON序列化
+    model_config = ConfigDict(from_attributes=True)  # 将ORM模型属性映射到Pydantic模型
 
 
 class UserCreateRequest(BaseModel):

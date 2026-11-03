@@ -10,3 +10,32 @@ export function createReservationApi(data) {
     data
   })
 }
+
+/**
+ * 获取预约列表
+ */
+export function getReservationPageList(params) {
+  return request({
+    url: '/api/reservation/list',
+    method: 'get',
+    params
+  })
+}
+
+/**
+ * 取消预约
+ */
+export function cancelReservationApi(id) {
+  return request({
+    url: `/api/reservation/${id}/cancel`,
+    method: 'put'
+  })
+}
+
+export function auditReservationApi(id, status) {
+  return request({
+    url: `/api/reservation/${id}/audit`,
+    method: 'put',
+    data: { status }
+  })
+}
