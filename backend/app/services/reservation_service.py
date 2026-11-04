@@ -156,6 +156,6 @@ def expire_pending_reservations():
 async def run_expire_scan():
     """一分钟扫描一次"""
     while True:
-        print("异步任务正在执行中...")
+        # print("异步任务正在执行中...")
         expire_pending_reservations()
         await asyncio.sleep(60)

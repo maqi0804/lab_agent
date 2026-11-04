@@ -8,3 +8,5 @@ python-multipart==0.0.32
 
 bcrypt==5.0.0
 PyJWT==2.13.0
+
+openai==3.14.1
