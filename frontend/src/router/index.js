@@ -32,7 +32,8 @@ const router = createRouter({
           path: 'audit-reservation',
           name: 'AuditReservation',
           component: () => import('@/views/AuditReservation.vue')
-        }
+        },
+        { path: 'ai-chat', name: 'AIChat', component: () => import('@/views/AIChat.vue') }
       ]
     },
     { path: '/login', name: 'Login', component: () => import('@/views/Login.vue') },
