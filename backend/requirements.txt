@@ -10,3 +10,9 @@ bcrypt==5.0.0
 PyJWT==2.13.0
 
 openai==3.14.1
+
+sentence-transformers==6.0.1
+huggingface-hub==1.33.0
+transformers==5.22.1
+
+chromadb==1.5.9

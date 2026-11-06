@@ -1,5 +1,6 @@
 import asyncio
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -22,6 +23,7 @@ from app.common.exceptions import (
 from app.services import reservation_service
 
 Base.metadata.create_all(bind=engine)  # 自动创建数据库和数据库表
+os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")  # 设置huggingface镜像源
 
 
 @asynccontextmanager
