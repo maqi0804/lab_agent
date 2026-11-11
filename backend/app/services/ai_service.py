@@ -1,6 +1,5 @@
 import json
 
-from regex import B
 from sqlalchemy.orm import Session
 
 from openai import OpenAI
@@ -64,7 +63,7 @@ def run_tool(
     arguments: str,
 ) -> str:
     try:
-        args = json.loads(arguments or "{}")
+        args = json.loads(arguments or "{}")  # JSON反序列化
     except json.JSONDecodeError:
         return json.dumps({"error": "参数不是合法的json"}, ensure_ascii=False)
     try:

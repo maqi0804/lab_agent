@@ -1,6 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
 import os
+import traceback
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -20,7 +21,7 @@ from app.common.exceptions import (
     validation_exception_handler,
     global_exception_handler,
 )
-from app.services import reservation_service
+from app.services import kb_service, reservation_service
 
 Base.metadata.create_all(bind=engine)  # 自动创建数据库和数据库表
 os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")  # 设置huggingface镜像源
@@ -28,9 +29,13 @@ os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")  # 设置huggingfa
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    task = asyncio.create_task(
-        reservation_service.run_expire_scan()
-    )  # 启动项目开启异步扫描任务
+    # 预热向量库：模型加载（约 15s）挪到启动阶段，避免首个请求超过前端 120s 超时
+    try:
+        await asyncio.to_thread(kb_service.warmup)  # to_thread：别阻塞事件循环
+    except Exception:
+        traceback.print_exc()
+    # 启动项目开启异步扫描任务
+    task = asyncio.create_task(reservation_service.run_expire_scan())
     yield
     task.cancel()  # 关闭项目 同时取消异步任务
 
