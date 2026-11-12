@@ -25,12 +25,12 @@ def build_tools(db: Session, current_user: User):
             return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
 
     @tool
-    def list_open_labs(keywards: str = "") -> str:
+    def list_open_labs(keywords: str = "") -> str:
         """查询所有开放实验室列表"""
         try:
-            keywards = keywards.strip() or None
+            keywords = keywords.strip() or None
             page = lab_service.get_lab_page_list(
-                db, page=1, page_size=10, keywords=keywards, status=1
+                db, page=1, page_size=10, keywords=keywords, status=1
             )
             rows = [
                 {
@@ -48,12 +48,12 @@ def build_tools(db: Session, current_user: User):
             return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
 
     @tool
-    def list_lab_equipments(lab_id: int, keywards: str = "") -> str:
+    def list_lab_equipments(lab_id: int, keywords: str = "") -> str:
         """查询某个实验室的设备列表"""
         try:
-            keywards = keywards.strip() or None
+            keywords = keywords.strip() or None
             page = equipment_service.get_equipment_page_list(
-                db, page=1, page_size=10, lab_id=int(lab_id), keywords=keywards
+                db, page=1, page_size=10, lab_id=int(lab_id), keywords=keywords
             )
             rows = [
                 {
@@ -118,10 +118,56 @@ def build_tools(db: Session, current_user: User):
         now = datetime.now()
         return now.strftime("%Y-%m-%d")
 
+    @tool
+    def list_my_reservations() -> str:
+        """查询当前用户自己的预约记录，取消预约前用来获取reservation_id"""
+        try:
+            page = reservation_service.get_reservation_page_list(
+                db, current_user, page=1, page_size=50
+            )
+            rows = [
+                {
+                    "id": item.id,
+                    "lab_id": item.lab_id,
+                    "lab_name": item.lab_name,
+                    "equipment_id": item.equipment_id,
+                    "equipment_name": item.equipment_name,
+                    "date": item.date,
+                    "start_time": item.start_time,
+                    "end_time": item.end_time,
+                    "status": item.status,
+                    "remark": item.remark,
+                    "type": item.type,
+                }
+                for item in page.list
+            ]
+            return json.dumps(
+                {"total": page.total, "reservations": rows}, ensure_ascii=False
+            )
+        except BusinessException as exc:
+            return json.dumps({"ok": False, "error": exc.message}, ensure_ascii=False)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @tool
+    def cancel_lab_reservation(reservation_id: int) -> str:
+        """取消用户预约"""
+        try:
+            reservation_service.cancel_reservation(db, current_user, reservation_id)
+            return json.dumps(
+                {"ok": True, "message": "取消预约成功"}, ensure_ascii=False
+            )
+        except BusinessException as exc:
+            return json.dumps({"ok": False, "error": exc.message}, ensure_ascii=False)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
     return [
         search_lab_docs,
         list_open_labs,
         list_lab_equipments,
         create_lab_reservation,
         get_today,
+        list_my_reservations,
+        cancel_lab_reservation,
     ]

@@ -36,8 +36,13 @@ async def lifespan(app: FastAPI):
         traceback.print_exc()
     # 启动项目开启异步扫描任务
     task = asyncio.create_task(reservation_service.run_expire_scan())
-    yield
-    task.cancel()  # 关闭项目 同时取消异步任务
+    try:
+        yield
+    finally:
+        task.cancel()  # 关闭项目 同时取消异步任务
+        await asyncio.gather(
+            task, return_exceptions=True
+        )  # 取消任务不再把CancelledError 抛给lifespan
 
 
 app = FastAPI(lifespan=lifespan)
