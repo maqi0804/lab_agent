@@ -3,6 +3,7 @@
 > 一个把「实验室预约」这条业务流交给大模型 Agent 跑通的全栈项目：用户用自然语言说一句"帮我预约后天下午的光学实验台"，Agent 自己查实验室、查设备、核对日期、复述确认、落库提交，全程流式返回，每一步工具调用都可见。
 
 <p>
+  <a href="https://github.com/maqi0804/lab_agent"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-maqi0804%2Flab__agent-181717?logo=github&logoColor=white"></a>
   <img alt="Python" src="https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white">
   <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white">
   <img alt="Vue" src="https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js&logoColor=white">
@@ -11,6 +12,8 @@
   <img alt="LangGraph" src="https://img.shields.io/badge/LangGraph-1.x-1C3C3C">
   <img alt="ChromaDB" src="https://img.shields.io/badge/ChromaDB-1.5-FF6B6B">
 </p>
+
+**仓库地址：** <https://github.com/maqi0804/lab_agent>
 
 ---
 
@@ -28,6 +31,9 @@
 - [快速开始](#快速开始)
 - [接口一览](#接口一览)
 - [实现成果](#实现成果)
+- [设计取舍与已知限制](#设计取舍与已知限制)
+- [后续规划](#后续规划)
+- [联系方式](#联系方式)
 
 ---
 
@@ -451,7 +457,16 @@ Laboratory Reservation_System_agent/
 - Node.js 22.18+ 或 24.12+
 - MySQL 8.0+
 
-### 1. 准备数据库
+### 1. 克隆仓库
+
+```bash
+git clone https://github.com/maqi0804/lab_agent.git
+cd lab_agent
+```
+
+仓库结构为 `backend/` + `frontend/` 双目录，前后端分别启动。
+
+### 2. 准备数据库
 
 ```sql
 CREATE DATABASE lab_reservation DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -459,7 +474,7 @@ CREATE DATABASE lab_reservation DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_un
 
 建表不需要手动执行 DDL——应用启动时 `Base.metadata.create_all()` 会自动建表。
 
-### 2. 配置后端环境变量
+### 3. 配置后端环境变量
 
 在 `backend/` 下创建 `.env`（该文件已被 gitignore，不会进版本库）：
 
@@ -480,7 +495,7 @@ LLM_BASE_URL=https://api.deepseek.com/v1
 
 > `LLM_BASE_URL` 指向任何兼容 `chat/completions` 与 tool calling 的服务即可（DeepSeek、通义、Moonshot、vLLM 自建等）。若使用不支持 `thinking` 参数的模型，注意 `agent_service.py` 中的 `extra_body={"thinking": {"type": "disabled"}}` 需相应调整。
 
-### 3. 启动后端
+### 4. 启动后端
 
 ```bash
 cd backend
@@ -500,7 +515,7 @@ uvicorn app.main:app --reload --port 8000
 - 接口文档：<http://127.0.0.1:8000/docs>
 - 静态资源：`http://127.0.0.1:8000/uploads/<filename>`
 
-### 4. 启动前端
+### 5. 启动前端
 
 ```bash
 cd frontend
@@ -510,7 +525,7 @@ npm run dev
 
 访问 <http://localhost:5173>。后端 CORS 已放行 `5173`，前端 `VITE_API_BASE_URL` 指向 `http://127.0.0.1:8000`。
 
-### 5. 初始化数据
+### 6. 初始化数据
 
 注册一个账号后，需要管理员身份才能审核预约、维护实验室。直接把该用户的 `role` 改成 `admin`：
 
@@ -571,6 +586,45 @@ UPDATE users SET role = 'admin' WHERE username = 'your_account';
 | 前端 120s 超时 | 改为流式后首个 token 秒级返回，超时压力消失 |
 | 同步 ORM 阻塞事件循环 | 后台扫描与 embedding 预热都包 `asyncio.to_thread` |
 | AI 越权 | 工具闭包绑定 `current_user`，模型无法指定他人身份 |
+
+---
+
+## 设计取舍与已知限制
+
+写这份 README 时把项目真实存在的问题也列清楚，比只写亮点有用：
+
+- **知识库不分块**：4 篇文档各约 5 行，整篇入库检索效果最好；一旦文档变长（如设备手册），必须引入分块 + 重叠切分，否则一篇里不相关的内容会稀释相似度。
+- **单轮工具结果截断 200 字**：只为前端展示友好，模型侧拿到的仍是完整 JSON。若后续把 `preview` 也回灌给模型，需要重新评估截断长度。
+- **`extra_body` 硬编码 `thinking.disabled`**：这是为特定模型关掉深度思考的参数，换模型必须同步修改，否则可能报 400。
+- **过期扫描是单机协程**：多实例部署会重复扫描（幂等，无害但浪费），生产环境应换成定时任务组件 + 数据库行锁。
+- **Chroma 目录已入库**：`backend/data/chroma/` 里的二进制文件当前在版本控制内，每次启动都会产生 diff。建议后续移出版本库，改为启动时构建。
+- **无密码复杂度与登录限流**：目前只做 bcrypt 哈希存储，未做失败次数限制，属于演示级。
+- **设备预约不阻塞整间预约**：代码中整间实验室预约的冲突查询限定 `equipment_id IS NULL`，因此"约了设备"不会挡住别人约整间实验室。`设备使用.md` 里写的规则比代码更严格，二者尚未对齐。
+
+---
+
+## 后续规划
+
+- [ ] 我的预约支持修改时段（当前只能取消重建）
+- [ ] 预约日历视图，直观看到时段占用
+- [ ] 知识库支持上传与增量重建索引
+- [ ] Agent 支持多轮追问与"换个时间试试"的自动重试
+- [ ] 过期扫描改为 APScheduler + 分布式锁
+- [ ] 补充接口级测试与 CI
+
+---
+
+## 联系方式
+
+| 项 | 内容 |
+| --- | --- |
+| 项目仓库 | <https://github.com/maqi0804/lab_agent> |
+| 作者主页 | <https://github.com/maqi0804> |
+| 问题反馈 | 直接在仓库提 [Issue](https://github.com/maqi0804/lab_agent/issues) |
+
+如果这个项目对你有帮助，欢迎 Star 支持一下。
+
+运行环境：Windows 11 / Python 3.11 / Node 22 / MySQL 8.0.46
 
 
 
